@@ -8,6 +8,7 @@ import http from 'http';
 import mongoose from 'mongoose';
 import { MovieSchema } from './mongoose/movie';
 import { Movie } from './models/movie';
+import { resolveSoa } from 'dns';
 dotenv.config();
 
 const app = express();
@@ -126,6 +127,10 @@ app.get("/high-light", (req, res, next) => {
   } catch (error) {
     res.status(500).json({ message: "Unexpected error occur. Please try again later" });
   }
+});
+
+app.get("/", (req, res, next) => {
+  res.send('Welcome!!!');
 });
 
 server.listen(port, async () => {

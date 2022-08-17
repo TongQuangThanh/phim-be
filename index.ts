@@ -134,8 +134,7 @@ app.get("/", (req, res, next) => {
 });
 
 server.listen(port, async () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
-  console.log('[internal:reset]:', (await axios.get('https://phim-be.herokuapp.com/data')).data);
+  console.log(`[server]: Server is running, current time: `, new Date());
   setInterval(async () => console.log((await axios.get('https://phim-be.herokuapp.com/data')).data), 1000 * 60 * 29); // 29p
   setInterval(async () => {
     const success = await checkRawData();

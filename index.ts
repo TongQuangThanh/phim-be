@@ -140,7 +140,7 @@ server.listen(port, async () => {
     const success = await checkRawData();
     if (success) {
       dataMovies = await MovieSchema.find();
-      console.log('[source:db]:', dataMovies[0].slug);
+      console.log('[reset source:db]:', dataMovies[0].slug);
     }
   }, 1000 * 60 * 60 * 24 * 7); // 7n
 });

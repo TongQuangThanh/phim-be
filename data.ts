@@ -1,11 +1,9 @@
 
 import { PageResult } from './models/page';
-import { Movie, MovieResult } from './models/movie';
-import * as fs from 'fs';
 import axios from 'axios';
 import https from 'https';
-import path from 'path';
-import { dataPath } from './const';
+import { MovieSchema } from './mongoose/movie';
+import { Document } from 'mongoose';
 
 let category: string[] = [];
 let country: string[] = [];
@@ -14,7 +12,7 @@ let status: string[] = [];
 let quality: string[] = [];
 let lang: string[] = [];
 let year: number[] = [];
-const data: Movie[] = [];
+const data: Document<any, any, any>[] = [];
 axios.defaults.httpsAgent = new https.Agent({ keepAlive: true });
 
 export const url = 'https://ophim1.com';
@@ -38,7 +36,7 @@ export const checkRawData = async () => {
         if (request.status > 299 || !request.data.status) {
           continue;
         }
-        const movie = (request.data as MovieResult).movie;
+        const movie = request.data.movie;
         data.push(movie);
         if (movie.category) {
           for (const c of movie.category) {
@@ -59,27 +57,11 @@ export const checkRawData = async () => {
         year = addToArray(year, movie.year) as number[];
       }
     }
-
+    await MovieSchema.remove();
+    await MovieSchema.bulkSave(data);
     console.log((Date.now() - time) / 3600000);
-    if (fs.existsSync(dataPath)) {
-      fs.readdir(dataPath, (err, files) => {
-        if (err) throw err;
-        for (const file of files) {
-          fs.unlink(path.join(dataPath, file), () => { });
-        }
-      });
-    } else {
-      fs.mkdirSync(dataPath);
-    }
-    fs.writeFileSync(`${path.join(dataPath, 'data.json')}`, JSON.stringify(data));
-    fs.writeFileSync(`${path.join(dataPath, 'category.json')}`, JSON.stringify(category));
-    fs.writeFileSync(`${path.join(dataPath, 'country.json')}`, JSON.stringify(country));
-    fs.writeFileSync(`${path.join(dataPath, 'type.json')}`, JSON.stringify(type));
-    fs.writeFileSync(`${path.join(dataPath, 'status.json')}`, JSON.stringify(status));
-    fs.writeFileSync(`${path.join(dataPath, 'quality.json')}`, JSON.stringify(quality));
-    fs.writeFileSync(`${path.join(dataPath, 'lang.json')}`, JSON.stringify(lang));
-    fs.writeFileSync(`${path.join(dataPath, 'year.json')}`, JSON.stringify(year));
   } catch (error) {
+    console.error(error);
     return false;
   }
   return true;

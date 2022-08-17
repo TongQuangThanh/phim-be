@@ -5,8 +5,9 @@ import * as fs from 'fs';
 import { dataPath, type } from './const';
 import path from 'path';
 import http from 'http';
+import mongoose from 'mongoose';
+import { MovieSchema } from './mongoose/movie';
 import { Movie } from './models/movie';
-const debug = require('debug')("node-angular");
 dotenv.config();
 
 const app = express();
@@ -23,6 +24,27 @@ app.use((req, res, next) => {
 });
 
 let dataMovies = JSON.parse(fs.readFileSync(path.join(dataPath, 'data.json'), 'utf8')) as Movie[];
+console.log('[source:json]:', dataMovies[0].slug);
+mongoose.connect("mongodb+srv://tongquangthanh:tongquangthanh@cluster0.80gcgnc.mongodb.net/phim?retryWrites=true&w=majority")
+  .then(async (db) => {
+    console.log('[database]: Connected to database!');
+    dataMovies = await MovieSchema.find();
+    console.log('[source:db]:', dataMovies[0].slug);
+  });
+
+const normalizePort = (val: string) => {
+  const port = parseInt(val, 10);
+  if (isNaN(port)) return val;
+  if (port >= 0) return port;
+  return false;
+}
+
+const port = normalizePort(process.env.PORT || "3080");
+app.set('port', port);
+const server = http.createServer(app);
+server.on("error", (error: any) => {
+  if (error.syscall !== "listen") throw error;
+});
 
 app.get("/data", (req, res, next) => {
   const data: any = {};
@@ -41,7 +63,6 @@ app.get("/data", (req, res, next) => {
 });
 
 app.get("/tim-kiem", (req, res, next) => {
-  const a = new Date().getMilliseconds();
   const page = +(req.query.page || 1) - 1;
   const limit = +(req.query.limit || 10);
   const str = (req.query.str as string).trim().toLowerCase();
@@ -52,21 +73,20 @@ app.get("/tim-kiem", (req, res, next) => {
   const from = +(req.query.from as string);
   const to = +(req.query.to as string);
   try {
-    const data: Movie[] = dataMovies.filter(m =>
+    const data = dataMovies.filter(m =>
       (
-        m.name.toLowerCase().includes(str) ||
-        m.origin_name.toLowerCase().includes(str) ||
+        m.name?.toLowerCase().includes(str) ||
+        m.origin_name?.toLowerCase().includes(str) ||
         m.director.map(d => d.toLowerCase()).includes(str) ||
         m.actor.map(a => a.toLowerCase()).includes(str)
       ) &&
-      (!type || type.includes(m.type)) &&
-      (!status || status.includes(m.status)) &&
-      (!genre || m.category.some(c => genre.includes(c.name.trim().toLowerCase()))) &&
-      (!country || m.country.some(c => country.includes(c.name.trim().toLowerCase()))) &&
-      from <= m.year && m.year <= to
+      (!type || type.includes(m.type || '')) &&
+      (!status || status.includes(m.status || '')) &&
+      (!genre || m.category.some(c => genre.includes((c.name || '').trim().toLowerCase()))) &&
+      (!country || m.country.some(c => country.includes((c.name || '').trim().toLowerCase()))) &&
+      from <= (m.year || from) && (m.year || to) <= to
     ).slice(limit * page, limit);
     res.status(200).json({ message: "Fetch successfully", data });
-    console.log(new Date().getMilliseconds() - a);
   } catch (error) {
     res.status(500).json({ message: "Unexpected error occur. Please try again later" });
   }
@@ -85,7 +105,7 @@ app.get("/danh-sach/:url", (req, res, next) => { // phim-bo
       if (url === 'chieu-rap') {
         data = dataMovies.filter(m => m.chieurap).slice(limit * page, limit);
       } else {
-        dataMovies.sort((a, b) => new Date(a.modified.time).getTime() - new Date(b.modified.time).getTime());
+        dataMovies.sort((a, b) => new Date(a.modified?.time || new Date()).getTime() - new Date(b.modified?.time || new Date()).getTime());
         data = dataMovies.slice(limit * page, limit);
       }
     }
@@ -108,43 +128,13 @@ app.get("/high-light", (req, res, next) => {
   }
 });
 
-const normalizePort = (val: string) => {
-  var port = parseInt(val, 10);
-  if (isNaN(port)) {
-    return val;
-  }
-
-  if (port >= 0) {
-    return port;
-  }
-  return false;
-}
-
-const onError = (error: any) => {
-  if (error.syscall !== "listen") {
-    throw error;
-  }
-}
-
-const onListening = () => {
-  const addr = server.address();
-  const bind = typeof addr === "string" ? "pipe " + addr : "port " + port;
-  console.log('Listening on ' + port);
-  debug("Listening on " + bind);
-}
-
-const port = normalizePort(process.env.PORT || "3080");
-app.set('port', port);
-const server = http.createServer(app);
-server.on("error", onError);
-server.on("listening", onListening);
-server.listen(port, () => {
+server.listen(port, async () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
-  // checkRawData();
   setInterval(async () => {
     const success = await checkRawData();
     if (success) {
-      dataMovies = JSON.parse(fs.readFileSync(path.join(dataPath, 'data.json'), 'utf8')) as Movie[];
+      dataMovies = await MovieSchema.find();
+      console.log('[source:db]:', dataMovies[0].slug);
     }
   }, 1000 * 60 * 60 * 24 * 7);
 });

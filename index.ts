@@ -8,7 +8,6 @@ import http from 'http';
 import mongoose from 'mongoose';
 import { MovieSchema } from './mongoose/movie';
 import { Movie } from './models/movie';
-import { resolveSoa } from 'dns';
 dotenv.config();
 
 const app = express();

@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { checkRawData } from './data';
+import axios from 'axios';
 import * as fs from 'fs';
 import { dataPath, type } from './const';
 import path from 'path';
@@ -134,11 +135,13 @@ app.get("/", (req, res, next) => {
 
 server.listen(port, async () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
+  console.log('[internal:reset]:', (await axios.get('https://phim-be.herokuapp.com/data')).data);
+  setInterval(async () => console.log((await axios.get('https://phim-be.herokuapp.com/data')).data), 1000 * 60 * 29); // 29p
   setInterval(async () => {
     const success = await checkRawData();
     if (success) {
       dataMovies = await MovieSchema.find();
       console.log('[source:db]:', dataMovies[0].slug);
     }
-  }, 1000 * 60 * 60 * 24 * 7);
+  }, 1000 * 60 * 60 * 24 * 7); // 7n
 });

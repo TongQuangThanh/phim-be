@@ -142,5 +142,5 @@ server.listen(port, async () => {
       dataMovies = await MovieSchema.find();
       console.log('[reset source:db]:', dataMovies[0].slug);
     }
-  }, 1000 * 60 * 60 * 24 * 7); // 7n
+  }, 1000 * 60 * 60 * 24); // 1n
 });

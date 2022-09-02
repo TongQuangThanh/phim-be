@@ -1,4 +1,6 @@
 export const dataPath = './data';
+export const APP_NAME = 'thnvn_phim_';
+export const APP_NAME_TOKEN = APP_NAME + 'token';
 
 export const typeObj = {
   series: "series",
@@ -23,5 +25,13 @@ export const type = [
   {
     key: "tvshows",
     url: "tv-shows"
+  },
+  {
+    key: "cinema",
+    url: "chieu-rap"
+  },
+  {
+    key: "latest",
+    url: "moi-nhat"
   }
 ]

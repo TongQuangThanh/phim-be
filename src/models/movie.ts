@@ -60,3 +60,8 @@ export interface MovieResult {
   movie: Movie;
   episodes: Episode[];
 }
+
+export interface InternalPageResult {
+  movies: Movie[];
+  totalRecords: number;
+}

@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.type = exports.typeObj = exports.dataPath = void 0;
+exports.type = exports.typeObj = exports.APP_NAME_TOKEN = exports.APP_NAME = exports.dataPath = void 0;
 exports.dataPath = './data';
+exports.APP_NAME = 'thnvn_phim_';
+exports.APP_NAME_TOKEN = exports.APP_NAME + 'token';
 exports.typeObj = {
     series: "series",
     single: "single",
@@ -24,5 +26,13 @@ exports.type = [
     {
         key: "tvshows",
         url: "tv-shows"
+    },
+    {
+        key: "cinema",
+        url: "chieu-rap"
+    },
+    {
+        key: "latest",
+        url: "moi-nhat"
     }
 ];

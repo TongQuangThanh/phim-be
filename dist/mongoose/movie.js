@@ -7,7 +7,6 @@ exports.MovieSchema = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const movieSchema = new mongoose_1.default.Schema({
     modified: { time: Date },
-    _id: String,
     name: String,
     origin_name: String,
     content: String,
@@ -33,7 +32,7 @@ const movieSchema = new mongoose_1.default.Schema({
     category: [{ name: String }],
     country: [{ name: String }],
 });
-movieSchema.index({ name: 'text', origin_name: 'text', slug: 'text' });
+movieSchema.index({ name: 'text', slug: 'text' });
 const model = mongoose_1.default.model('Movie', movieSchema);
 model.createIndexes();
 exports.MovieSchema = model;

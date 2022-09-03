@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 const movieSchema = new mongoose.Schema({
   modified: { time: Date },
-  _id: String,
   name: String,
   origin_name: String,
   content: String,
@@ -28,7 +27,7 @@ const movieSchema = new mongoose.Schema({
   category: [{ name: String }],
   country: [{ name: String }],
 });
-movieSchema.index({ name: 'text', origin_name: 'text', slug: 'text' });
+movieSchema.index({ name: 'text', slug: 'text' });
 const model = mongoose.model('Movie', movieSchema);
 model.createIndexes();
 export const MovieSchema = model;

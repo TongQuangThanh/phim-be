@@ -20,6 +20,7 @@ export const checkRawData = async () => {
   try {
     const time = Date.now();
 
+    const name: string[] = [];
     let totalPages = 83;
     for (let i = 1; i <= totalPages; i++) {
       console.log(`${i}/${totalPages}`, (Date.now() - time) / 1000);
@@ -37,6 +38,11 @@ export const checkRawData = async () => {
           continue;
         }
         const movie = request.data.movie;
+        if (name.includes(movie.name)) {
+          continue;
+        } else {
+          name.push(movie.name);
+        }
         data.push(movie);
         if (movie.category) {
           for (const c of movie.category) {

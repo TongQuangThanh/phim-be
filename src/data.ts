@@ -58,7 +58,13 @@ export const checkRawData = async () => {
       }
     }
     await MovieSchema.deleteMany();
-    await MovieSchema.insertMany(data);
+    const step = 1000;
+    const len = Math.ceil(data.length / step);
+    for (let i = 0; i <= len; i++) { // 18k - 1 2 3 ... 18
+      const idx = i * step;
+      const added = data.slice(idx, idx + step);
+      await MovieSchema.insertMany(added);
+    }
     console.log((Date.now() - time) / 3600000);
   } catch (error) {
     console.error(error);

@@ -71,6 +71,7 @@ const checkRawData = () => __awaiter(void 0, void 0, void 0, function* () {
             const idx = i * step;
             const added = data.slice(idx, idx + step);
             yield movie_1.MovieSchema.insertMany(added);
+            console.log(idx, len);
         }
         console.log((Date.now() - time) / 3600000);
     }

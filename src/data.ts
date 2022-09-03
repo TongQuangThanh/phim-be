@@ -64,6 +64,7 @@ export const checkRawData = async () => {
       const idx = i * step;
       const added = data.slice(idx, idx + step);
       await MovieSchema.insertMany(added);
+      console.log(idx, len);
     }
     console.log((Date.now() - time) / 3600000);
   } catch (error) {

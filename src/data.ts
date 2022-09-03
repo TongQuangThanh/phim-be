@@ -21,12 +21,12 @@ export const checkRawData = async () => {
     const time = Date.now();
 
     const name: string[] = [];
-    let totalPages = 83;
+    let totalPages = 683;
     for (let i = 1; i <= totalPages; i++) {
       console.log(`${i}/${totalPages}`, (Date.now() - time) / 1000);
       const moviesURL = encodeURI(`${url}/danh-sach/phim-moi-cap-nhat?page=${i}`);
       const movies = await (await axios.get(moviesURL)).data as PageResult;
-      // totalPages = movies.pagination.totalPages;
+      totalPages = movies.pagination.totalPages;
       for (const m of movies.items) {
         const movieURL = encodeURI(`${url}/phim/${m.slug.replaceAll('‑', '-')}`);
         const request = await axios.get(movieURL, {
@@ -64,7 +64,7 @@ export const checkRawData = async () => {
       }
     }
     await MovieSchema.deleteMany();
-    const step = 100;
+    const step = 1000;
     const len = Math.ceil(data.length / step);
     for (let i = 0; i <= len; i++) { // 18k - 1 2 3 ... 18
       const idx = i * step;

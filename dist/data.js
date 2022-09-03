@@ -29,12 +29,13 @@ exports.url = 'https://ophim1.com';
 const checkRawData = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const time = Date.now();
-        let totalPages = 83;
+        const name = [];
+        let totalPages = 683;
         for (let i = 1; i <= totalPages; i++) {
             console.log(`${i}/${totalPages}`, (Date.now() - time) / 1000);
             const moviesURL = encodeURI(`${exports.url}/danh-sach/phim-moi-cap-nhat?page=${i}`);
             const movies = yield (yield axios_1.default.get(moviesURL)).data;
-            // totalPages = movies.pagination.totalPages;
+            totalPages = movies.pagination.totalPages;
             for (const m of movies.items) {
                 const movieURL = encodeURI(`${exports.url}/phim/${m.slug.replaceAll('‑', '-')}`);
                 const request = yield axios_1.default.get(movieURL, {
@@ -46,6 +47,12 @@ const checkRawData = () => __awaiter(void 0, void 0, void 0, function* () {
                     continue;
                 }
                 const movie = request.data.movie;
+                if (name.includes(movie.name)) {
+                    continue;
+                }
+                else {
+                    name.push(movie.name);
+                }
                 data.push(movie);
                 if (movie.category) {
                     for (const c of movie.category) {
@@ -65,7 +72,7 @@ const checkRawData = () => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
         yield movie_1.MovieSchema.deleteMany();
-        const step = 100;
+        const step = 1000;
         const len = Math.ceil(data.length / step);
         for (let i = 0; i <= len; i++) { // 18k - 1 2 3 ... 18
             const idx = i * step;

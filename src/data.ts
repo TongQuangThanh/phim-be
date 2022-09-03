@@ -20,9 +20,9 @@ export const checkRawData = async () => {
   try {
     const time = Date.now();
 
-    let totalPages = 669;
+    let totalPages = 683;
     for (let i = 1; i <= totalPages; i++) {
-      console.log(i, (Date.now() - time) / 1000);
+      console.log(`${i}/${totalPages}`, (Date.now() - time) / 1000);
       const moviesURL = encodeURI(`${url}/danh-sach/phim-moi-cap-nhat?page=${i}`);
       const movies = await (await axios.get(moviesURL)).data as PageResult;
       totalPages = movies.pagination.totalPages;
@@ -57,8 +57,8 @@ export const checkRawData = async () => {
         year = addToArray(year, movie.year) as number[];
       }
     }
-    await MovieSchema.remove();
-    await MovieSchema.bulkSave(data);
+    await MovieSchema.deleteMany();
+    await MovieSchema.insertMany(data);
     console.log((Date.now() - time) / 3600000);
   } catch (error) {
     console.error(error);

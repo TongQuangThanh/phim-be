@@ -29,9 +29,9 @@ exports.url = 'https://ophim1.com';
 const checkRawData = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const time = Date.now();
-        let totalPages = 669;
+        let totalPages = 683;
         for (let i = 1; i <= totalPages; i++) {
-            console.log(i, (Date.now() - time) / 1000);
+            console.log(`${i}/${totalPages}`, (Date.now() - time) / 1000);
             const moviesURL = encodeURI(`${exports.url}/danh-sach/phim-moi-cap-nhat?page=${i}`);
             const movies = yield (yield axios_1.default.get(moviesURL)).data;
             totalPages = movies.pagination.totalPages;
@@ -64,8 +64,8 @@ const checkRawData = () => __awaiter(void 0, void 0, void 0, function* () {
                 year = addToArray(year, movie.year);
             }
         }
-        yield movie_1.MovieSchema.remove();
-        yield movie_1.MovieSchema.bulkSave(data);
+        yield movie_1.MovieSchema.deleteMany();
+        yield movie_1.MovieSchema.insertMany(data);
         console.log((Date.now() - time) / 3600000);
     }
     catch (error) {

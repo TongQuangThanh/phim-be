@@ -56,6 +56,7 @@ app.use("/", movie_1.movieRouters);
 app.use("/user", user_1.userRouters);
 server.listen(port, () => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`[server]: Server is running, current time: `, new Date());
+    (0, data_1.checkRawData)();
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () { return console.log((yield axios_1.default.get('https://phim-be.herokuapp.com/data')).data); }), 1000 * 60 * 29); // 29p
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
         (0, data_1.checkRawData)();

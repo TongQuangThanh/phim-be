@@ -39,9 +39,11 @@ exports.movieRouters = void 0;
 const path_1 = __importDefault(require("path"));
 const fs = __importStar(require("fs"));
 const express_1 = __importDefault(require("express"));
+const slugify_1 = __importDefault(require("slugify"));
 const const_1 = require("../const");
 const movie_1 = require("../mongoose/movie");
 exports.movieRouters = express_1.default.Router();
+const limit = 6;
 let dataMovies = JSON.parse(fs.readFileSync(path_1.default.join(const_1.dataPath, 'data.json'), 'utf8'));
 let filterType = JSON.parse(fs.readFileSync(path_1.default.join(const_1.dataPath, 'type.json'), 'utf8'));
 let filterStatus = JSON.parse(fs.readFileSync(path_1.default.join(const_1.dataPath, 'status.json'), 'utf8'));
@@ -109,6 +111,40 @@ exports.movieRouters.get("/tim-kiem", (req, res) => {
         res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
     }
 });
+exports.movieRouters.get("/quoc-gia/:url", (req, res) => {
+    const url = req.params.url;
+    const page = +(req.query.page || 1) - 1;
+    const limit = +(req.query.limit || 10);
+    console.log(url);
+    const country = filterCountry.find(c => (0, slugify_1.default)(c) === url);
+    try {
+        movie_1.MovieSchema.aggregate([
+            { $match: { 'country.name': country } },
+            { $sort: { createdAt: -1 } },
+            facet(limit, page)
+        ]).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
+    }
+    catch (error) {
+        res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
+    }
+});
+exports.movieRouters.get("/the-loai/:url", (req, res) => {
+    const url = req.params.url;
+    const page = +(req.query.page || 1) - 1;
+    const limit = +(req.query.limit || 10);
+    console.log(url);
+    const category = filterCategory.find(c => (0, slugify_1.default)(c) === url);
+    try {
+        movie_1.MovieSchema.aggregate([
+            { $match: { 'category.name': category } },
+            { $sort: { createdAt: -1 } },
+            facet(limit, page)
+        ]).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
+    }
+    catch (error) {
+        res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
+    }
+});
 exports.movieRouters.get("/danh-sach/:url", (req, res) => {
     var _a;
     const url = req.params.url;
@@ -136,7 +172,6 @@ exports.movieRouters.get("/danh-sach/:url", (req, res) => {
     }
 });
 exports.movieRouters.get("/home", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const limit = 6;
     const a = new Date().getTime();
     const prefer = parseQuery(req.query.prefer, 'category');
     try {

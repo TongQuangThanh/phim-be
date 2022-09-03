@@ -1,16 +1,18 @@
 import path from 'path';
 import * as fs from 'fs';
 import express from 'express';
+import slugify from 'slugify';
 import { dataPath, type } from '../const';
 import { Movie } from '../models/movie';
 import { MovieSchema } from '../mongoose/movie';
 export const movieRouters = express.Router();
 
+const limit = 6;
 let dataMovies = JSON.parse(fs.readFileSync(path.join(dataPath, 'data.json'), 'utf8')) as Movie[];
-let filterType = JSON.parse(fs.readFileSync(path.join(dataPath, 'type.json'), 'utf8'));
-let filterStatus = JSON.parse(fs.readFileSync(path.join(dataPath, 'status.json'), 'utf8'));
-let filterCountry = JSON.parse(fs.readFileSync(path.join(dataPath, 'country.json'), 'utf8'));
-let filterCategory = JSON.parse(fs.readFileSync(path.join(dataPath, 'category.json'), 'utf8'));
+let filterType = JSON.parse(fs.readFileSync(path.join(dataPath, 'type.json'), 'utf8')) as string[];
+let filterStatus = JSON.parse(fs.readFileSync(path.join(dataPath, 'status.json'), 'utf8')) as string[];
+let filterCountry = JSON.parse(fs.readFileSync(path.join(dataPath, 'country.json'), 'utf8')) as string[];
+let filterCategory = JSON.parse(fs.readFileSync(path.join(dataPath, 'category.json'), 'utf8')) as string[];
 
 movieRouters.get("/data", (req, res) => {
   const data: any = {};
@@ -78,6 +80,44 @@ movieRouters.get("/tim-kiem", (req, res) => {
   }
 });
 
+movieRouters.get("/quoc-gia/:url", (req, res) => { // phim-bo
+  const url = req.params.url;
+  const page = +(req.query.page || 1) - 1;
+  const limit = +(req.query.limit || 10);
+  console.log(url);
+  const country = filterCountry.find(c => slugify(c) === url);
+  try {
+    MovieSchema.aggregate(
+      [
+        { $match: { 'country.name': country } },
+        { $sort: { createdAt: -1 } },
+        facet(limit, page)
+      ]
+    ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
+  } catch (error) {
+    res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
+  }
+});
+
+movieRouters.get("/the-loai/:url", (req, res) => { // phim-bo
+  const url = req.params.url;
+  const page = +(req.query.page || 1) - 1;
+  const limit = +(req.query.limit || 10);
+  console.log(url);
+  const category = filterCategory.find(c => slugify(c) === url);
+  try {
+    MovieSchema.aggregate(
+      [
+        { $match: { 'category.name': category } },
+        { $sort: { createdAt: -1 } },
+        facet(limit, page)
+      ]
+    ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
+  } catch (error) {
+    res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
+  }
+});
+
 movieRouters.get("/danh-sach/:url", (req, res) => { // phim-bo
   const url = req.params.url;
   const page = +(req.query.page || 1) - 1;
@@ -105,7 +145,6 @@ movieRouters.get("/danh-sach/:url", (req, res) => { // phim-bo
 });
 
 movieRouters.get("/home", async (req, res) => {
-  const limit = 6;
   const a = new Date().getTime();
   const prefer = parseQuery(req.query.prefer, 'category');
   try {

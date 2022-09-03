@@ -32,7 +32,7 @@ const movieSchema = new mongoose_1.default.Schema({
     category: [{ name: String }],
     country: [{ name: String }],
 });
-movieSchema.index({ name: 'text', slug: 'text' });
+movieSchema.index({ origin_name: 'text', slug: 'text' });
 const model = mongoose_1.default.model('Movie', movieSchema);
 model.createIndexes();
 exports.MovieSchema = model;

@@ -188,6 +188,19 @@ exports.movieRouters.get("/home", (req, res) => __awaiter(void 0, void 0, void 0
         res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
     }
 }));
+exports.movieRouters.get("/de-xuat", (req, res) => {
+    const prefer = parseQuery(req.query.prefer, 'category');
+    const currentCategory = parseQuery(req.query.category, 'category');
+    const mixPrefer = [...new Set(prefer.concat(currentCategory))];
+    const limit = +(req.query.limit || 10);
+    try {
+        movie_1.MovieSchema.find({ 'category.name': { $in: mixPrefer } }, null, { limit }).sort({ 'modified.time': -1 })
+            .then(data => res.status(200).json({ message: "Fetch successfully", data }));
+    }
+    catch (error) {
+        res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
+    }
+});
 exports.movieRouters.get("/high-light", (req, res) => {
     try {
         const day = new Date();

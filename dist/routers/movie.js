@@ -43,6 +43,7 @@ const slugify_1 = __importDefault(require("slugify"));
 const const_1 = require("../const");
 const movie_1 = require("../mongoose/movie");
 exports.movieRouters = express_1.default.Router();
+const country = ['Trung Quốc'];
 const limit = 6;
 let dataMovies = JSON.parse(fs.readFileSync(path_1.default.join(const_1.dataPath, 'data.json'), 'utf8'));
 let filterType = JSON.parse(fs.readFileSync(path_1.default.join(const_1.dataPath, 'type.json'), 'utf8'));
@@ -70,7 +71,7 @@ exports.movieRouters.get("/tim-kiem", (req, res) => {
     const type = parseQuery(req.query.type, 'type');
     const genre = parseQuery(req.query.genre, 'category');
     const status = parseQuery(req.query.status, 'status');
-    const country = parseQuery(req.query.country, 'country');
+    // const country = parseQuery(req.query.country, 'country');
     const from = +req.query.from;
     const to = +req.query.to;
     try {
@@ -137,7 +138,7 @@ exports.movieRouters.get("/the-loai/:url", (req, res) => {
     const category = filterCategory.find(c => (0, slugify_1.default)(c) === url);
     try {
         movie_1.MovieSchema.aggregate([
-            { $match: { 'category.name': category } },
+            { $match: { 'category.name': category, 'country.name': { $in: country } } },
             { $sort: { createdAt: -1 } },
             facet(limit, page)
         ]).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
@@ -154,13 +155,13 @@ exports.movieRouters.get("/danh-sach/:url", (req, res) => {
     const prefer = parseQuery(req.query.prefer, 'category');
     const selectedType = (_a = const_1.type.find(t => t.url === url)) === null || _a === void 0 ? void 0 : _a.key;
     try {
-        let match = { type: selectedType };
+        let match = { type: selectedType, 'country.name': { $in: country } };
         let sort = { createdAt: -1 };
         if (url === 'chieu-rap') {
-            match = { chieurap: true };
+            match = { chieurap: true, 'country.name': { $in: country } };
         }
         else if (!selectedType) {
-            match = { year: { $lte: 1 } };
+            match = { year: { $lte: 1 }, 'country.name': { $in: country } };
             sort = { 'modified.time': -1 };
         }
         movie_1.MovieSchema.aggregate([
@@ -178,10 +179,11 @@ exports.movieRouters.get("/home", (req, res) => __awaiter(void 0, void 0, void 0
     try {
         let data = {};
         for (const t of const_1.type) {
-            data[t.key] = yield movie_1.MovieSchema.find({ type: t.key }, null, { limit }).sort({ 'modified.time': -1 });
+            data[t.key] = yield movie_1.MovieSchema.find({ type: t.key, 'country.name': { $in: country } }, null, { limit }).sort({ 'modified.time': -1 });
         }
-        data['cinema'] = yield movie_1.MovieSchema.find({ chieurap: true }, null, { limit }).sort({ 'modified.time': -1 });
-        data['latest'] = yield movie_1.MovieSchema.find({}, null, { limit }).sort({ 'modified.time': -1 });
+        data['cinema'] = yield movie_1.MovieSchema.find({ chieurap: true, 'country.name': { $in: country } }, null, { limit }).sort({ 'modified.time': -1 });
+        data['latest'] = yield movie_1.MovieSchema.find({ 'country.name': { $in: country } }, null, { limit }).sort({ 'modified.time': -1 });
+        console.log(country, data);
         res.status(200).json({ message: "Fetch successfully", data });
     }
     catch (error) {
@@ -194,7 +196,7 @@ exports.movieRouters.get("/de-xuat", (req, res) => {
     const mixPrefer = [...new Set(prefer.concat(currentCategory))];
     const limit = +(req.query.limit || 10);
     try {
-        movie_1.MovieSchema.find({ 'category.name': { $in: mixPrefer } }, null, { limit }).sort({ 'modified.time': -1 })
+        movie_1.MovieSchema.find({ 'category.name': { $in: mixPrefer }, 'country.name': { $in: country } }, null, { limit }).sort({ 'modified.time': -1 })
             .then(data => res.status(200).json({ message: "Fetch successfully", data }));
     }
     catch (error) {
@@ -206,6 +208,7 @@ exports.movieRouters.get("/high-light", (req, res) => {
     try {
         const day = new Date();
         movie_1.MovieSchema.findOne({
+            'country.name': { $in: country },
             chieurap: true,
             status: 'completed',
             poster_url: { $ne: null },

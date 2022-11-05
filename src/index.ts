@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 mongoose.connect("mongodb+srv://tongquangthanh:tongquangthanh@cluster0.80gcgnc.mongodb.net/phim?w=majority")
   .then(async (db) => {
     console.log('[database]: Connected to database!');
-  });
+  }).catch(e => console.log(e));
 
 const normalizePort = (val: string) => {
   const port = parseInt(val, 10);

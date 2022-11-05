@@ -40,21 +40,21 @@ movieRouters.get("/tim-kiem", (req, res) => {
   const from = +(req.query.from as string);
   const to = +(req.query.to as string);
   try {
-    const data = dataMovies.filter(m =>
-      (
-        m.name?.toLowerCase().includes(str) ||
-        m.slug?.toLowerCase().includes(str) ||
-        m.origin_name?.toLowerCase().includes(str) ||
-        m.director.map(d => d.toLowerCase()).includes(str) ||
-        m.actor.map(a => a.toLowerCase()).includes(str)
-      ) &&
-      type.includes(m.type || '') &&
-      status.includes(m.status || '') &&
-      m.category.some(c => genre.includes(c.name || '')) &&
-      m.country.some(c => country.includes(c.name || '')) &&
-      from <= (m.year || from) && (m.year || to) <= to
-    );
-    console.log(data.length);
+    // const data = dataMovies.filter(m =>
+    //   (
+    //     m.name?.toLowerCase().includes(str) ||
+    //     m.slug?.toLowerCase().includes(str) ||
+    //     m.origin_name?.toLowerCase().includes(str) ||
+    //     m.director.map(d => d.toLowerCase()).includes(str) ||
+    //     m.actor.map(a => a.toLowerCase()).includes(str)
+    //   ) &&
+    //   type.includes(m.type || '') &&
+    //   status.includes(m.status || '') &&
+    //   m.category.some(c => genre.includes(c.name || '')) &&
+    //   m.country.some(c => country.includes(c.name || '')) &&
+    //   from <= (m.year || from) && (m.year || to) <= to
+    // );
+    // console.log(data.length);
     const match: any = {
       $and: [{ year: { $gte: from } }, { year: { $lte: to } }],
       type: { $in: type },
@@ -84,7 +84,7 @@ movieRouters.get("/quoc-gia/:url", (req, res) => { // phim-bo
   const url = req.params.url;
   const page = +(req.query.page || 1) - 1;
   const limit = +(req.query.limit || 10);
-  console.log(url);
+  const prefer = parseQuery(req.query.prefer, 'category');
   const country = filterCountry.find(c => slugify(c) === url);
   try {
     MovieSchema.aggregate(
@@ -103,7 +103,7 @@ movieRouters.get("/the-loai/:url", (req, res) => { // phim-bo
   const url = req.params.url;
   const page = +(req.query.page || 1) - 1;
   const limit = +(req.query.limit || 10);
-  console.log(url);
+  const prefer = parseQuery(req.query.prefer, 'category');
   const category = filterCategory.find(c => slugify(c) === url);
   try {
     MovieSchema.aggregate(
@@ -122,6 +122,7 @@ movieRouters.get("/danh-sach/:url", (req, res) => { // phim-bo
   const url = req.params.url;
   const page = +(req.query.page || 1) - 1;
   const limit = +(req.query.limit || 10);
+  const prefer = parseQuery(req.query.prefer, 'category');
   const selectedType = type.find(t => t.url === url)?.key;
   try {
     let match: any = { type: selectedType };
@@ -129,7 +130,7 @@ movieRouters.get("/danh-sach/:url", (req, res) => { // phim-bo
     if (url === 'chieu-rap') {
       match = { chieurap: true };
     } else if (!selectedType) {
-      match = {};
+      match = { year: { $lte: 1 } };
       sort = { 'modified.time': -1 };
     }
     MovieSchema.aggregate(
@@ -145,16 +146,14 @@ movieRouters.get("/danh-sach/:url", (req, res) => { // phim-bo
 });
 
 movieRouters.get("/home", async (req, res) => {
-  const a = new Date().getTime();
   const prefer = parseQuery(req.query.prefer, 'category');
   try {
     let data: any = {};
     for (const t of type) {
-      data[t.key] = await MovieSchema.find({ type: t.key, 'category.name': { $in: prefer } }, null, { limit }).sort({ 'modified.time': -1 });
+      data[t.key] = await MovieSchema.find({ type: t.key }, null, { limit }).sort({ 'modified.time': -1 });
     }
     data['cinema'] = await MovieSchema.find({ chieurap: true }, null, { limit }).sort({ 'modified.time': -1 });
     data['latest'] = await MovieSchema.find({}, null, { limit }).sort({ 'modified.time': -1 });
-    console.log(new Date().getTime() - a);
     res.status(200).json({ message: "Fetch successfully", data })
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
@@ -175,6 +174,7 @@ movieRouters.get("/de-xuat", (req, res) => {
 });
 
 movieRouters.get("/high-light", (req, res) => {
+  const prefer = parseQuery(req.query.prefer, 'category');
   try {
     const day = new Date();
     MovieSchema.findOne({

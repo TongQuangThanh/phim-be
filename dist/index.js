@@ -33,7 +33,7 @@ app.use((req, res, next) => {
 mongoose_1.default.connect("mongodb+srv://tongquangthanh:tongquangthanh@cluster0.80gcgnc.mongodb.net/phim?w=majority")
     .then((db) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('[database]: Connected to database!');
-}));
+})).catch(e => console.log(e));
 const normalizePort = (val) => {
     const port = parseInt(val, 10);
     if (isNaN(port))

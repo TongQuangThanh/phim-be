@@ -74,20 +74,21 @@ exports.movieRouters.get("/tim-kiem", (req, res) => {
     const from = +req.query.from;
     const to = +req.query.to;
     try {
-        const data = dataMovies.filter(m => {
-            var _a, _b, _c;
-            return (((_a = m.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(str)) ||
-                ((_b = m.slug) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes(str)) ||
-                ((_c = m.origin_name) === null || _c === void 0 ? void 0 : _c.toLowerCase().includes(str)) ||
-                m.director.map(d => d.toLowerCase()).includes(str) ||
-                m.actor.map(a => a.toLowerCase()).includes(str)) &&
-                type.includes(m.type || '') &&
-                status.includes(m.status || '') &&
-                m.category.some(c => genre.includes(c.name || '')) &&
-                m.country.some(c => country.includes(c.name || '')) &&
-                from <= (m.year || from) && (m.year || to) <= to;
-        });
-        console.log(data.length);
+        // const data = dataMovies.filter(m =>
+        //   (
+        //     m.name?.toLowerCase().includes(str) ||
+        //     m.slug?.toLowerCase().includes(str) ||
+        //     m.origin_name?.toLowerCase().includes(str) ||
+        //     m.director.map(d => d.toLowerCase()).includes(str) ||
+        //     m.actor.map(a => a.toLowerCase()).includes(str)
+        //   ) &&
+        //   type.includes(m.type || '') &&
+        //   status.includes(m.status || '') &&
+        //   m.category.some(c => genre.includes(c.name || '')) &&
+        //   m.country.some(c => country.includes(c.name || '')) &&
+        //   from <= (m.year || from) && (m.year || to) <= to
+        // );
+        // console.log(data.length);
         const match = {
             $and: [{ year: { $gte: from } }, { year: { $lte: to } }],
             type: { $in: type },
@@ -115,7 +116,7 @@ exports.movieRouters.get("/quoc-gia/:url", (req, res) => {
     const url = req.params.url;
     const page = +(req.query.page || 1) - 1;
     const limit = +(req.query.limit || 10);
-    console.log(url);
+    const prefer = parseQuery(req.query.prefer, 'category');
     const country = filterCountry.find(c => (0, slugify_1.default)(c) === url);
     try {
         movie_1.MovieSchema.aggregate([
@@ -132,7 +133,7 @@ exports.movieRouters.get("/the-loai/:url", (req, res) => {
     const url = req.params.url;
     const page = +(req.query.page || 1) - 1;
     const limit = +(req.query.limit || 10);
-    console.log(url);
+    const prefer = parseQuery(req.query.prefer, 'category');
     const category = filterCategory.find(c => (0, slugify_1.default)(c) === url);
     try {
         movie_1.MovieSchema.aggregate([
@@ -150,6 +151,7 @@ exports.movieRouters.get("/danh-sach/:url", (req, res) => {
     const url = req.params.url;
     const page = +(req.query.page || 1) - 1;
     const limit = +(req.query.limit || 10);
+    const prefer = parseQuery(req.query.prefer, 'category');
     const selectedType = (_a = const_1.type.find(t => t.url === url)) === null || _a === void 0 ? void 0 : _a.key;
     try {
         let match = { type: selectedType };
@@ -158,7 +160,7 @@ exports.movieRouters.get("/danh-sach/:url", (req, res) => {
             match = { chieurap: true };
         }
         else if (!selectedType) {
-            match = {};
+            match = { year: { $lte: 1 } };
             sort = { 'modified.time': -1 };
         }
         movie_1.MovieSchema.aggregate([
@@ -172,16 +174,14 @@ exports.movieRouters.get("/danh-sach/:url", (req, res) => {
     }
 });
 exports.movieRouters.get("/home", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const a = new Date().getTime();
     const prefer = parseQuery(req.query.prefer, 'category');
     try {
         let data = {};
         for (const t of const_1.type) {
-            data[t.key] = yield movie_1.MovieSchema.find({ type: t.key, 'category.name': { $in: prefer } }, null, { limit }).sort({ 'modified.time': -1 });
+            data[t.key] = yield movie_1.MovieSchema.find({ type: t.key }, null, { limit }).sort({ 'modified.time': -1 });
         }
         data['cinema'] = yield movie_1.MovieSchema.find({ chieurap: true }, null, { limit }).sort({ 'modified.time': -1 });
         data['latest'] = yield movie_1.MovieSchema.find({}, null, { limit }).sort({ 'modified.time': -1 });
-        console.log(new Date().getTime() - a);
         res.status(200).json({ message: "Fetch successfully", data });
     }
     catch (error) {
@@ -202,6 +202,7 @@ exports.movieRouters.get("/de-xuat", (req, res) => {
     }
 });
 exports.movieRouters.get("/high-light", (req, res) => {
+    const prefer = parseQuery(req.query.prefer, 'category');
     try {
         const day = new Date();
         movie_1.MovieSchema.findOne({

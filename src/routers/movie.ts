@@ -15,7 +15,7 @@ let filterStatus = JSON.parse(fs.readFileSync(path.join(dataPath, 'status.json')
 let filterCountry = JSON.parse(fs.readFileSync(path.join(dataPath, 'country.json'), 'utf8')) as string[];
 let filterCategory = JSON.parse(fs.readFileSync(path.join(dataPath, 'category.json'), 'utf8')) as string[];
 
-movieRouters.get("/data", (req, res) => {
+movieRouters.get("/data", (_req, res) => {
   const data: any = {};
   fs.readdir(dataPath, (err, files) => {
     if (err) {
@@ -26,7 +26,8 @@ movieRouters.get("/data", (req, res) => {
         data[file.replace('.json', '')] = JSON.parse(fs.readFileSync(path.join(dataPath, file), 'utf8'));
       }
     }
-    res.status(200).json({ message: "Fetch successfully", data });
+    res.status(200).json({ message: "Fetch successfully", data: [] });
+    // res.status(200).json({ message: "Fetch successfully", data });
   });
 });
 
@@ -75,7 +76,8 @@ movieRouters.get("/tim-kiem", (req, res) => {
         { $sort: { createdAt: -1 } },
         facet(limit, page)
       ]
-    ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
+    ).then((_result: any) => res.status(200).json({ message: "Fetch successfully", data: [] }));
+    // ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
   }
@@ -94,7 +96,8 @@ movieRouters.get("/quoc-gia/:url", (req, res) => { // phim-bo
         { $sort: { createdAt: -1 } },
         facet(limit, page)
       ]
-    ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
+    ).then((_result: any) => res.status(200).json({ message: "Fetch successfully", data: [] }));
+    // ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
   }
@@ -113,7 +116,8 @@ movieRouters.get("/the-loai/:url", (req, res) => { // phim-bo
         { $sort: { createdAt: -1 } },
         facet(limit, page)
       ]
-    ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
+    ).then((_result: any) => res.status(200).json({ message: "Fetch successfully", data: [] }));
+    // ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
   }
@@ -140,7 +144,8 @@ movieRouters.get("/danh-sach/:url", (req, res) => { // phim-bo
         { $sort: sort },
         facet(limit, page)
       ]
-    ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
+    ).then((_result: any) => res.status(200).json({ message: "Fetch successfully", data: [] }));
+    // ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
   }
@@ -156,7 +161,8 @@ movieRouters.get("/home", async (req, res) => {
     data['cinema'] = await MovieSchema.find({ chieurap: true, 'country.name': { $in: country } }, null, { limit }).sort({ 'modified.time': -1 });
     data['latest'] = await MovieSchema.find({ 'country.name': { $in: country } }, null, { limit }).sort({ 'modified.time': -1 });
     console.log(country, data);
-    res.status(200).json({ message: "Fetch successfully", data })
+    res.status(200).json({ message: "Fetch successfully", data: [] })
+    // res.status(200).json({ message: "Fetch successfully", data })
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
   }
@@ -169,7 +175,8 @@ movieRouters.get("/de-xuat", (req, res) => {
   const limit = +(req.query.limit || 10);
   try {
     MovieSchema.find({ 'category.name': { $in: mixPrefer }, 'country.name': { $in: country } }, null, { limit }).sort({ 'modified.time': -1 })
-      .then(data => res.status(200).json({ message: "Fetch successfully", data }));
+      .then((_data: any) => res.status(200).json({ message: "Fetch successfully", data: [] }));
+    // .then(data => res.status(200).json({ message: "Fetch successfully", data }));
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
   }
@@ -185,11 +192,12 @@ movieRouters.get("/high-light", (req, res) => {
       status: 'completed',
       poster_url: { $ne: null },
       $or: [{ year: day.getFullYear() }, { year: day.getFullYear() - 1 }],
-    }, (err: Error, data: Movie) => {
+    }, (err: Error, _data: Movie) => {
       if (err) {
         res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
       } else {
-        res.status(200).json({ message: "Fetch successfully", data: data || dataMovies[0] });
+        res.status(200).json({ message: "Fetch successfully", data: [] });
+        // res.status(200).json({ message: "Fetch successfully", data: data || dataMovies[0] });
       }
     });
   } catch (error) {

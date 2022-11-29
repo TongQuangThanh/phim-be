@@ -23,7 +23,7 @@ export const checkRawData = async () => {
     const name: string[] = [];
     let totalPages = 683;
     for (let i = 1; i <= totalPages; i++) {
-      console.log(`${i}/${totalPages}`, (Date.now() - time) / 1000);
+      // console.log(`${i}/${totalPages}`, (Date.now() - time) / 1000);
       const moviesURL = encodeURI(`${url}/danh-sach/phim-moi-cap-nhat?page=${i}`);
       const movies = await (await axios.get(moviesURL)).data as PageResult;
       totalPages = movies.pagination.totalPages;
@@ -70,9 +70,9 @@ export const checkRawData = async () => {
       const idx = i * step;
       const added = data.slice(idx, idx + step);
       await MovieSchema.insertMany(added);
-      console.log(idx, len);
+      // console.log(idx, len);
     }
-    console.log((Date.now() - time) / 3600000);
+    // console.log((Date.now() - time) / 3600000);
   } catch (error) {
     console.error(error);
     return false;

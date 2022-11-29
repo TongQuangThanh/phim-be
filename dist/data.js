@@ -32,7 +32,7 @@ const checkRawData = () => __awaiter(void 0, void 0, void 0, function* () {
         const name = [];
         let totalPages = 683;
         for (let i = 1; i <= totalPages; i++) {
-            console.log(`${i}/${totalPages}`, (Date.now() - time) / 1000);
+            // console.log(`${i}/${totalPages}`, (Date.now() - time) / 1000);
             const moviesURL = encodeURI(`${exports.url}/danh-sach/phim-moi-cap-nhat?page=${i}`);
             const movies = yield (yield axios_1.default.get(moviesURL)).data;
             totalPages = movies.pagination.totalPages;
@@ -78,9 +78,9 @@ const checkRawData = () => __awaiter(void 0, void 0, void 0, function* () {
             const idx = i * step;
             const added = data.slice(idx, idx + step);
             yield movie_1.MovieSchema.insertMany(added);
-            console.log(idx, len);
+            // console.log(idx, len);
         }
-        console.log((Date.now() - time) / 3600000);
+        // console.log((Date.now() - time) / 3600000);
     }
     catch (error) {
         console.error(error);

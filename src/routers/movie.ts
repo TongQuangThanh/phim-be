@@ -7,7 +7,6 @@ import { Movie } from '../models/movie';
 import { MovieSchema } from '../mongoose/movie';
 export const movieRouters = express.Router();
 
-const country = ['Trung Quốc'];
 const limit = 6;
 let dataMovies = JSON.parse(fs.readFileSync(path.join(dataPath, 'data.json'), 'utf8')) as Movie[];
 let filterType = JSON.parse(fs.readFileSync(path.join(dataPath, 'type.json'), 'utf8')) as string[];
@@ -26,8 +25,8 @@ movieRouters.get("/data", (_req, res) => {
         data[file.replace('.json', '')] = JSON.parse(fs.readFileSync(path.join(dataPath, file), 'utf8'));
       }
     }
-    res.status(200).json({ message: "Fetch successfully", data: [] });
-    // res.status(200).json({ message: "Fetch successfully", data });
+    // res.status(200).json({ message: "Fetch successfully", data: [] });
+    res.status(200).json({ message: "Fetch successfully", data });
   });
 });
 
@@ -38,7 +37,7 @@ movieRouters.get("/tim-kiem", (req, res) => {
   const type = parseQuery(req.query.type, 'type');
   const genre = parseQuery(req.query.genre, 'category');
   const status = parseQuery(req.query.status, 'status');
-  // const country = parseQuery(req.query.country, 'country');
+  const country = parseQuery(req.query.country, 'country');
   const from = +(req.query.from as string);
   const to = +(req.query.to as string);
   try {
@@ -76,8 +75,8 @@ movieRouters.get("/tim-kiem", (req, res) => {
         { $sort: { createdAt: -1 } },
         facet(limit, page)
       ]
-    ).then((_result: any) => res.status(200).json({ message: "Fetch successfully", data: [] }));
-    // ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
+    // ).then((_result: any) => res.status(200).json({ message: "Fetch successfully", data: [] }));
+    ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
   }
@@ -108,6 +107,7 @@ movieRouters.get("/the-loai/:url", (req, res) => { // phim-bo
   const page = +(req.query.page || 1) - 1;
   const limit = +(req.query.limit || 10);
   const prefer = parseQuery(req.query.prefer, 'category');
+  const country = parseQuery(req.query.country, 'country');
   const category = filterCategory.find(c => slugify(c) === url);
   try {
     MovieSchema.aggregate(
@@ -129,11 +129,14 @@ movieRouters.get("/danh-sach/:url", (req, res) => { // phim-bo
   const limit = +(req.query.limit || 10);
   const prefer = parseQuery(req.query.prefer, 'category');
   const selectedType = type.find(t => t.url === url)?.key;
+  const country = parseQuery(req.query.country, 'country');
   try {
     let match: any = { type: selectedType, 'country.name': { $in: country } };
     let sort: any = { createdAt: -1 };
     if (url === 'chieu-rap') {
       match = { chieurap: true, 'country.name': { $in: country } };
+    } else if (url === 'moi-nhat') {
+      match = { 'country.name': { $in: country } };
     } else if (!selectedType) {
       match = { year: { $lte: 1 }, 'country.name': { $in: country } };
       sort = { 'modified.time': -1 };
@@ -144,8 +147,8 @@ movieRouters.get("/danh-sach/:url", (req, res) => { // phim-bo
         { $sort: sort },
         facet(limit, page)
       ]
-    ).then((_result: any) => res.status(200).json({ message: "Fetch successfully", data: [] }));
-    // ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
+    // ).then((_result: any) => res.status(200).json({ message: "Fetch successfully", data: [] }));
+    ).then(result => res.status(200).json({ message: "Fetch successfully", data: result[0] }));
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
   }
@@ -153,6 +156,7 @@ movieRouters.get("/danh-sach/:url", (req, res) => { // phim-bo
 
 movieRouters.get("/home", async (req, res) => {
   const prefer = parseQuery(req.query.prefer, 'category');
+  const country = parseQuery(req.query.country, 'country');
   try {
     let data: any = {};
     for (const t of type) {
@@ -160,9 +164,8 @@ movieRouters.get("/home", async (req, res) => {
     }
     data['cinema'] = await MovieSchema.find({ chieurap: true, 'country.name': { $in: country } }, null, { limit }).sort({ 'modified.time': -1 });
     data['latest'] = await MovieSchema.find({ 'country.name': { $in: country } }, null, { limit }).sort({ 'modified.time': -1 });
-    console.log(country, data);
-    res.status(200).json({ message: "Fetch successfully", data: [] })
-    // res.status(200).json({ message: "Fetch successfully", data })
+    // res.status(200).json({ message: "Fetch successfully", data: [] })
+    res.status(200).json({ message: "Fetch successfully", data })
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
   }
@@ -170,13 +173,14 @@ movieRouters.get("/home", async (req, res) => {
 
 movieRouters.get("/de-xuat", (req, res) => {
   const prefer = parseQuery(req.query.prefer, 'category');
+  const country = parseQuery(req.query.country, 'country');
   const currentCategory = parseQuery(req.query.category, 'category');
   const mixPrefer = [...new Set(prefer.concat(currentCategory))];
   const limit = +(req.query.limit || 10);
   try {
     MovieSchema.find({ 'category.name': { $in: mixPrefer }, 'country.name': { $in: country } }, null, { limit }).sort({ 'modified.time': -1 })
-      .then((_data: any) => res.status(200).json({ message: "Fetch successfully", data: [] }));
-    // .then(data => res.status(200).json({ message: "Fetch successfully", data }));
+      // .then((_data: any) => res.status(200).json({ message: "Fetch successfully", data: [] }));
+    .then(data => res.status(200).json({ message: "Fetch successfully", data }));
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
   }
@@ -184,6 +188,7 @@ movieRouters.get("/de-xuat", (req, res) => {
 
 movieRouters.get("/high-light", (req, res) => {
   const prefer = parseQuery(req.query.prefer, 'category');
+  const country = parseQuery(req.query.country, 'country');
   try {
     const day = new Date();
     MovieSchema.findOne({
@@ -192,12 +197,12 @@ movieRouters.get("/high-light", (req, res) => {
       status: 'completed',
       poster_url: { $ne: null },
       $or: [{ year: day.getFullYear() }, { year: day.getFullYear() - 1 }],
-    }, (err: Error, _data: Movie) => {
+    }, (err: Error, data: Movie) => {
       if (err) {
         res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại sau!!!" });
       } else {
-        res.status(200).json({ message: "Fetch successfully", data: [] });
-        // res.status(200).json({ message: "Fetch successfully", data: data || dataMovies[0] });
+        // res.status(200).json({ message: "Fetch successfully", data: [] });
+        res.status(200).json({ message: "Fetch successfully", data: data || dataMovies[0] });
       }
     });
   } catch (error) {

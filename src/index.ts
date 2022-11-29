@@ -47,6 +47,6 @@ app.use("/user", userRouters);
 
 server.listen(port, async () => {
   console.log(`[server]: Server is running, current time: `, new Date());
-  setInterval(async () => console.log((await axios.get('https://phim-be.herokuapp.com/data')).data), 1000 * 60 * (29 - 0.1)); // 29.9p
+  setInterval(async () => console.log((await axios.get('https://thnvn-phim.onrender.com/data')).data), 1000 * 60 * (5 - 0.1)); // 4.9p
   setInterval(async () => checkRawData(), 1000 * 60 * 60 * 24); // 1n
 });

@@ -37,6 +37,7 @@ const checkRawData = () => __awaiter(void 0, void 0, void 0, function* () {
             const movies = yield (yield axios_1.default.get(moviesURL)).data;
             totalPages = movies.pagination.totalPages;
             for (const m of movies.items) {
+                console.log(i, m.slug);
                 const movieURL = encodeURI(`${exports.url}/phim/${m.slug.replaceAll('‑', '-')}`);
                 const request = yield axios_1.default.get(movieURL, {
                     validateStatus: function (status) {

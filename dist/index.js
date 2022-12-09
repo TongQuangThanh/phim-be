@@ -56,6 +56,10 @@ app.use("/", movie_1.movieRouters);
 app.use("/user", user_1.userRouters);
 server.listen(port, () => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`[server]: Server is running, current time: `, new Date());
-    setInterval(() => __awaiter(void 0, void 0, void 0, function* () { return console.log((yield axios_1.default.get('https://thnvn-phim.onrender.com/data')).data); }), 1000 * 60 * (5 - 0.1)); // 4.9p
+    setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
+        const res = (yield axios_1.default.get('https://thnvn-phim.onrender.com/data')).data;
+        console.log(res === null || res === void 0 ? void 0 : res.message);
+    }), 1000 * 60 * (5 - 0.1)); // 4.9p
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () { return (0, data_1.checkRawData)(); }), 1000 * 60 * 60 * 24); // 1n
+    (0, data_1.checkRawData)();
 }));

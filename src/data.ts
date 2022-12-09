@@ -28,6 +28,7 @@ export const checkRawData = async () => {
       const movies = await (await axios.get(moviesURL)).data as PageResult;
       totalPages = movies.pagination.totalPages;
       for (const m of movies.items) {
+        console.log(i, m.slug);
         const movieURL = encodeURI(`${url}/phim/${m.slug.replaceAll('‑', '-')}`);
         const request = await axios.get(movieURL, {
           validateStatus: function (status) {

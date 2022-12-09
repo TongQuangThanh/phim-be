@@ -47,6 +47,10 @@ app.use("/user", userRouters);
 
 server.listen(port, async () => {
   console.log(`[server]: Server is running, current time: `, new Date());
-  setInterval(async () => console.log((await axios.get('https://thnvn-phim.onrender.com/data')).data), 1000 * 60 * (5 - 0.1)); // 4.9p
+  setInterval(async () => {
+    const res = (await axios.get('https://thnvn-phim.onrender.com/data')).data;
+    console.log(res?.message);
+  }, 1000 * 60 * (5 - 0.1)); // 4.9p
   setInterval(async () => checkRawData(), 1000 * 60 * 60 * 24); // 1n
+  checkRawData();
 });
